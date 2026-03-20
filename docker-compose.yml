@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # Database
+  mariadb:
+    image: mariadb:10.11
+    container_name: guardian-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: guardian_silobolsa
+      MYSQL_USER: guardian_user
+      MYSQL_PASSWORD: secure_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - guardian-network
+
+  # MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: guardian-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    networks:
+      - guardian-network
+
+  # Backend (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: guardian-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: guardian_user
+      DB_PASSWORD: secure_password
+      DB_NAME: guardian_silobolsa
+      MQTT_BROKER_URL: mqtt://mosquitto:1883
+      MQTT_CLIENT_ID: guardian_backend
+      BACKEND_PORT: 3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mariadb
+      - mosquitto
+    networks:
+      - guardian-network
+    command: pnpm dev
+
+  # Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: guardian-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000/api
+      VITE_WS_URL: ws://localhost:3000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - guardian-network
+    command: pnpm dev
+
+volumes:
+  mariadb_data:
+  mosquitto_data:
+  mosquitto_logs:
+
+networks:
+  guardian-network:
+    driver: bridge
