@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { AlertaService } from '../services/AlertaService';
 
-const router = Router();
-const alertaService = new AlertaService();
+const router: Router = Router();
 
 // GET /api/alertas - Get all alertas
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const alertaService = new AlertaService();
   try {
     const alertas = await alertaService.getAllAlertas();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/alertas/active - Get active alertas
-router.get('/active', async (req: Request, res: Response) => {
+router.get('/active', async (_req: Request, res: Response) => {
+  const alertaService = new AlertaService();
   try {
     const alertas = await alertaService.getActiveAlertas();
     res.json({
@@ -37,7 +38,8 @@ router.get('/active', async (req: Request, res: Response) => {
 });
 
 // GET /api/alertas/:id - Get alerta by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const alertaService = new AlertaService();
   try {
     const alerta = await alertaService.getAlertaById(parseInt(req.params.id));
     if (!alerta) {
@@ -60,6 +62,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/alertas - Create new alerta
 router.post('/', async (req: Request, res: Response) => {
+  const alertaService = new AlertaService();
   try {
     const alerta = await alertaService.createAlerta(req.body);
     res.status(201).json({
@@ -75,7 +78,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/alertas/:id/resolve - Resolve alerta
-router.put('/:id/resolve', async (req: Request, res: Response) => {
+router.put('/:id/resolve', async (req: Request, res: Response): Promise<any> => {
+  const alertaService = new AlertaService();
   try {
     const alerta = await alertaService.resolveAlerta(parseInt(req.params.id));
     if (!alerta) {
@@ -96,4 +100,4 @@ router.put('/:id/resolve', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

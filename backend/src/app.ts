@@ -2,12 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { MikroORM } from '@mikro-orm/core';
+import { MikroORM, RequestContext } from '@mikro-orm/core';
 import { config } from './config';
 import { mikroOrmConfig } from './config/database';
 import { MqttService } from './config/mqtt';
 import { logger } from './utils/logger';
- 
+import usuarioRoutes from './routes/usuarios';
+import campoRoutes from './routes/campos';
+import sensorRoutes from './routes/sensores';
+import silobolsaRoutes from './routes/silobolsas';
+import lecturaRoutes from './routes/lecturas';
+import alertaRoutes from './routes/alertas';
+import { errorHandler } from './middleware/error';
+
 const app = express();
 let orm: MikroORM;
 let mqttService: MqttService;
@@ -18,9 +25,18 @@ app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// MikroORM RequestContext middleware
+app.use((_req, _res, next) => {
+  if (orm) {
+    RequestContext.create(orm.em, next);
+  } else {
+    next();
+  }
+});
  
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
@@ -29,15 +45,15 @@ app.get('/health', (req, res) => {
 });
  
 // API Routes
-app.use('/api/usuarios', require('./routes/usuarios'));
-app.use('/api/campos', require('./routes/campos'));
-app.use('/api/sensores', require('./routes/sensores'));
-app.use('/api/silobolsas', require('./routes/silobolsas'));
-app.use('/api/lecturas', require('./routes/lecturas'));
-app.use('/api/alertas', require('./routes/alertas'));
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/campos', campoRoutes);
+app.use('/api/sensores', sensorRoutes);
+app.use('/api/silobolsas', silobolsaRoutes);
+app.use('/api/lecturas', lecturaRoutes);
+app.use('/api/alertas', alertaRoutes);
  
 // Error handling middleware
-app.use(require('./middleware/error'));
+app.use(errorHandler);
  
 async function initializeApp() {
   try {

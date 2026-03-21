@@ -5,7 +5,7 @@ import { Sensor } from './Sensor';
 @Index({ properties: ['sensor', 'timestamp'] })
 @Index({ properties: ['flag_alerta'] })
 export class Lectura {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
   @ManyToOne(() => Sensor)
@@ -23,13 +23,13 @@ export class Lectura {
   @Property({ type: 'float' })
   humedad!: number;
 
-  @Property({ default: false })
+  @Property({ type: 'boolean', default: false })
   flag_alerta!: boolean;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   constructor(data: Partial<Lectura>) {

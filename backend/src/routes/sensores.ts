@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { SensorService } from '../services/SensorService';
 
-const router = Router();
-const sensorService = new SensorService();
+const router: Router = Router();
 
 // GET /api/sensores - Get all sensores
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const sensorService = new SensorService();
   try {
     const sensores = await sensorService.getAllSensores();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/sensores/:id - Get sensor by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const sensorService = new SensorService();
   try {
     const sensor = await sensorService.getSensorById(parseInt(req.params.id));
     if (!sensor) {
@@ -44,6 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/sensores - Create new sensor
 router.post('/', async (req: Request, res: Response) => {
+  const sensorService = new SensorService();
   try {
     const sensor = await sensorService.createSensor(req.body);
     res.status(201).json({
@@ -59,7 +61,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/sensores/:id - Update sensor
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<any> => {
+  const sensorService = new SensorService();
   try {
     const sensor = await sensorService.updateSensor(parseInt(req.params.id), req.body);
     if (!sensor) {
@@ -81,7 +84,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/sensores/:id - Delete sensor (soft delete)
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
+  const sensorService = new SensorService();
   try {
     const sensor = await sensorService.deleteSensor(parseInt(req.params.id));
     if (!sensor) {
@@ -102,4 +106,4 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

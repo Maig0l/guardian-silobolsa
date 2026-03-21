@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { LecturaService } from '../services/LecturaService';
 
-const router = Router();
-const lecturaService = new LecturaService();
+const router: Router = Router();
 
 // GET /api/lecturas - Get all lecturas
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const lecturaService = new LecturaService();
   try {
     const lecturas = await lecturaService.getAllLecturas();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/lecturas/:id - Get lectura by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const lecturaService = new LecturaService();
   try {
     const lectura = await lecturaService.getLecturaById(parseInt(req.params.id));
     if (!lectura) {
@@ -44,6 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // GET /api/lecturas/sensor/:sensorId - Get lecturas by sensor
 router.get('/sensor/:sensorId', async (req: Request, res: Response) => {
+  const lecturaService = new LecturaService();
   try {
     const sensorId = parseInt(req.params.sensorId);
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
@@ -61,7 +63,8 @@ router.get('/sensor/:sensorId', async (req: Request, res: Response) => {
 });
 
 // GET /api/lecturas/alerts - Get lecturas with alerts
-router.get('/alerts', async (req: Request, res: Response) => {
+router.get('/alerts', async (_req: Request, res: Response) => {
+  const lecturaService = new LecturaService();
   try {
     const lecturas = await lecturaService.getAlertLecturas();
     res.json({
@@ -78,6 +81,7 @@ router.get('/alerts', async (req: Request, res: Response) => {
 
 // POST /api/lecturas - Create new lectura
 router.post('/', async (req: Request, res: Response) => {
+  const lecturaService = new LecturaService();
   try {
     const lectura = await lecturaService.createLectura(req.body);
     res.status(201).json({
@@ -92,4 +96,4 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

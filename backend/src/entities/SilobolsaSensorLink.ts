@@ -4,7 +4,7 @@ import { Sensor } from './Sensor';
 
 @Entity()
 export class SilobolsaSensorLink {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
   @ManyToOne(() => Silobolsa)
@@ -16,13 +16,13 @@ export class SilobolsaSensorLink {
   @Property({ type: 'datetime' })
   fecha_instalacion!: Date;
 
-  @Property({ default: 'ACTIVO' })
+  @Property({ type: 'string', default: 'ACTIVO' })
   estado!: string;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   constructor(data: Partial<SilobolsaSensorLink>) {

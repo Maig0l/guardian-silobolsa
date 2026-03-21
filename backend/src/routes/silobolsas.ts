@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { SilobolsaService } from '../services/SilobolsaService';
 
-const router = Router();
-const silobolsaService = new SilobolsaService();
+const router: Router = Router();
 
 // GET /api/silobolsas - Get all silobolsas
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const silobolsaService = new SilobolsaService();
   try {
     const silobolsas = await silobolsaService.getAllSilobolsas();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/silobolsas/:id - Get silobolsa by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const silobolsaService = new SilobolsaService();
   try {
     const silobolsa = await silobolsaService.getSilobolsaById(parseInt(req.params.id));
     if (!silobolsa) {
@@ -44,6 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/silobolsas - Create new silobolsa
 router.post('/', async (req: Request, res: Response) => {
+  const silobolsaService = new SilobolsaService();
   try {
     const silobolsa = await silobolsaService.createSilobolsa(req.body);
     res.status(201).json({
@@ -59,7 +61,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/silobolsas/:id - Update silobolsa
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<any> => {
+  const silobolsaService = new SilobolsaService();
   try {
     const silobolsa = await silobolsaService.updateSilobolsa(parseInt(req.params.id), req.body);
     if (!silobolsa) {
@@ -81,7 +84,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/silobolsas/:id - Delete silobolsa (soft delete)
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
+  const silobolsaService = new SilobolsaService();
   try {
     const silobolsa = await silobolsaService.deleteSilobolsa(parseInt(req.params.id));
     if (!silobolsa) {
@@ -102,4 +106,4 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

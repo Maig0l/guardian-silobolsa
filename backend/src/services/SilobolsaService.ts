@@ -3,10 +3,11 @@ import { Silobolsa } from '../entities/Silobolsa';
 import { orm } from '../app';
 
 export class SilobolsaService {
-  private em: EntityManager;
-
-  constructor() {
-    this.em = orm.em.fork();
+  private get em(): EntityManager {
+    if (!orm) {
+      throw new Error('ORM not initialized');
+    }
+    return orm.em.fork();
   }
 
   async getAllSilobolsas(): Promise<Silobolsa[]> {

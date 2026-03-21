@@ -3,34 +3,34 @@ import { Campo } from './Campo';
 
 @Entity()
 export class Usuario {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   nombre!: string;
 
-  @Property()
+  @Property({ type: 'string' })
   apellido!: string;
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   email!: string;
 
-  @Property({ hidden: true })
+  @Property({ type: 'string', hidden: true })
   password!: string;
 
-  @Property()
+  @Property({ type: 'string' })
   role!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   telefono?: string;
 
-  @Property({ default: 'ACTIVO' })
+  @Property({ type: 'string', default: 'ACTIVO' })
   estado!: string;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   @OneToMany(() => Campo, campo => campo.usuario)

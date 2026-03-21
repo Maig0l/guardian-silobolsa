@@ -5,28 +5,28 @@ import { Lectura } from './Lectura';
 
 @Entity()
 export class Sensor {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
   @ManyToOne(() => Campo)
   campo!: Rel<Campo>;
 
-  @Property()
+  @Property({ type: 'string' })
   modelo!: string;
 
-  @Property({ unique: true })
+  @Property({ type: 'string', unique: true })
   mac_address!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   api_key?: string;
 
-  @Property({ default: 'ACTIVO' })
+  @Property({ type: 'string', default: 'ACTIVO' })
   estado!: string;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   @OneToMany(() => SilobolsaSensorLink, link => link.sensor)

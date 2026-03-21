@@ -4,34 +4,34 @@ import { SilobolsaSensorLink } from './SilobolsaSensorLink';
 
 @Entity()
 export class Silobolsa {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
   @ManyToOne(() => Campo)
   campo!: Rel<Campo>;
 
-  @Property()
+  @Property({ type: 'string' })
   marca!: string;
 
   @Property({ type: 'float' })
   capacidad_max!: number;
 
-  @Property()
+  @Property({ type: 'string' })
   ubicacion!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   observaciones?: string;
 
-  @Property({ default: 'VACIO' })
+  @Property({ type: 'string', default: 'VACIO' })
   estado!: string;
 
-  @Property({ nullable: true })
+  @Property({ type: 'string', nullable: true })
   grano?: string;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   @OneToMany(() => SilobolsaSensorLink, link => link.silobolsa)

@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { UsuarioService } from '../services/UsuarioService';
 
-const router = Router();
-const usuarioService = new UsuarioService();
+const router: Router = Router();
 
 // GET /api/usuarios - Get all usuarios
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const usuarioService = new UsuarioService();
   try {
     const usuarios = await usuarioService.getAllUsuarios();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/usuarios/:id - Get usuario by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const usuarioService = new UsuarioService();
   try {
     const usuario = await usuarioService.getUsuarioById(parseInt(req.params.id));
     if (!usuario) {
@@ -44,6 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/usuarios - Create new usuario
 router.post('/', async (req: Request, res: Response) => {
+  const usuarioService = new UsuarioService();
   try {
     const usuario = await usuarioService.createUsuario(req.body);
     res.status(201).json({
@@ -59,7 +61,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/usuarios/:id - Update usuario
-router.put('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const usuarioService = new UsuarioService();
   try {
     const usuario = await usuarioService.updateUsuario(parseInt(req.params.id), req.body);
     if (!usuario) {
@@ -81,7 +84,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/usuarios/:id - Delete usuario (soft delete)
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
+  const usuarioService = new UsuarioService();
   try {
     const usuario = await usuarioService.deleteUsuario(parseInt(req.params.id));
     if (!usuario) {
@@ -102,4 +106,4 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

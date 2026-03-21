@@ -5,25 +5,25 @@ import { Silobolsa } from './Silobolsa';
 
 @Entity()
 export class Campo {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   id!: number;
 
   @ManyToOne(() => Usuario)
   usuario!: Rel<Usuario>;
 
-  @Property()
+  @Property({ type: 'string' })
   nombre!: string;
 
-  @Property()
+  @Property({ type: 'string' })
   ubicacion!: string;
 
-  @Property({ default: 'ACTIVO' })
+  @Property({ type: 'string', default: 'ACTIVO' })
   estado!: string;
 
-  @Property()
+  @Property({ type: 'Date' })
   createdAt!: Date;
 
-  @Property({ onUpdate: () => new Date() })
+  @Property({ type: 'Date', onUpdate: () => new Date() })
   updatedAt!: Date;
 
   @OneToMany(() => Sensor, sensor => sensor.campo)

@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { CampoService } from '../services/CampoService';
 
-const router = Router();
-const campoService = new CampoService();
+const router: Router = Router();
 
 // GET /api/campos - Get all campos
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
+  const campoService = new CampoService();
   try {
     const campos = await campoService.getAllCampos();
     res.json({
@@ -21,7 +21,8 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 // GET /api/campos/:id - Get campo by id
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<any> => {
+  const campoService = new CampoService();
   try {
     const campo = await campoService.getCampoById(parseInt(req.params.id));
     if (!campo) {
@@ -44,6 +45,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // POST /api/campos - Create new campo
 router.post('/', async (req: Request, res: Response) => {
+  const campoService = new CampoService();
   try {
     const campo = await campoService.createCampo(req.body);
     res.status(201).json({
@@ -59,7 +61,8 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // PUT /api/campos/:id - Update campo
-router.put('/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response): Promise<any> => {
+  const campoService = new CampoService();
   try {
     const campo = await campoService.updateCampo(parseInt(req.params.id), req.body);
     if (!campo) {
@@ -81,7 +84,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE /api/campos/:id - Delete campo (soft delete)
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response): Promise<any> => {
+  const campoService = new CampoService();
   try {
     const campo = await campoService.deleteCampo(parseInt(req.params.id));
     if (!campo) {
@@ -102,4 +106,4 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+export default router;

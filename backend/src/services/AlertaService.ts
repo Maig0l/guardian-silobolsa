@@ -3,10 +3,11 @@ import { Lectura } from '../entities/Lectura';
 import { orm } from '../app';
 
 export class AlertaService {
-  private em: EntityManager;
-
-  constructor() {
-    this.em = orm.em.fork();
+  private get em(): EntityManager {
+    if (!orm) {
+      throw new Error('ORM not initialized');
+    }
+    return orm.em.fork();
   }
 
   async getAllAlertas(): Promise<Lectura[]> {
