@@ -1,6 +1,6 @@
 @base = http://localhost:3000/api
 @contentType = Content-Type: application/json
-@token = <PEGAR_TOKEN_AQUI>
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhbGVAZ3VhcmRpYW4uY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzQxMjY3NTAsImV4cCI6MTc3NDczMTU1MH0.IX8yQde1btfDvADXNQGJ6bf3yMDXkG8BbBPF4AEtbEU
 @auth = Authorization: Bearer {{token}}
 
 ### ── Listar campos del usuario ──────────────────────────────────────────────
@@ -13,8 +13,8 @@ POST {{base}}/fields
 {{contentType}}
 
 {
-  "nombre": "Campo La Esperanza",
-  "ubicacion": "Ruta 33 km 142, Venado Tuerto, Santa Fe"
+  "nombre": "La Esperanza",
+  "ubicacion": "Armstrong, Santa Fe"
 }
 
 ### ── Ver campo por ID ────────────────────────────────────────────────────────

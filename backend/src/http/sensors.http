@@ -1,8 +1,8 @@
 @base = http://localhost:3000/api
 @contentType = Content-Type: application/json
-@token = <PEGAR_TOKEN_AQUI>
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhbGVAZ3VhcmRpYW4uY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzQxMjY3NTAsImV4cCI6MTc3NDczMTU1MH0.IX8yQde1btfDvADXNQGJ6bf3yMDXkG8BbBPF4AEtbEU
 @auth = Authorization: Bearer {{token}}
-@fieldId = 1
+@fieldId = 3
 @sensorId = 1
 
 ### ── Listar sensores del campo ──────────────────────────────────────────────
@@ -25,7 +25,7 @@ POST {{base}}/fields/{{fieldId}}/sensors
 
 {
   "modelo": "SHT31-LoRa v2",
-  "mac_address": "A4:C3:F0:12:34:56"
+  "mac_address": "A4:C3:F0:12:34:02"
 }
 
 ### ── Actualizar sensor ───────────────────────────────────────────────────────

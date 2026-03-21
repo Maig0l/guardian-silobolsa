@@ -1,10 +1,10 @@
 @base = http://localhost:3000/api
 @contentType = Content-Type: application/json
-@token = <PEGAR_TOKEN_AQUI>
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhbGVAZ3VhcmRpYW4uY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzQxMjY3NTAsImV4cCI6MTc3NDczMTU1MH0.IX8yQde1btfDvADXNQGJ6bf3yMDXkG8BbBPF4AEtbEU
 @auth = Authorization: Bearer {{token}}
-@fieldId = 1
-@silobagId = 1
-@sensorId = 1
+@fieldId = 2
+@silobagId = 2
+@sensorId = 5
 
 ### ── Listar silobolsas del campo ────────────────────────────────────────────
 GET {{base}}/fields/{{fieldId}}/silobolsas
@@ -20,10 +20,10 @@ POST {{base}}/fields/{{fieldId}}/silobolsas
 {{contentType}}
 
 {
-  "marca": "Ipesa",
-  "capacidad_max": 200,
-  "ubicacion": "Lote norte, cabecera izquierda",
-  "grano": "SOJA",
+  "marca": "Richiger",
+  "capacidad_max": 180,
+  "ubicacion": "Lote sur, cabecera derecha",
+  "grano": "GIRASOL",
   "observaciones": "Embolsado en marzo 2024"
 }
 

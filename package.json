@@ -7,6 +7,8 @@
     "dev": "concurrently --names \"BACK,FRONT\" --prefix-colors \"cyan,magenta\" \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
+    "dev:simulator": "pnpm --filter simulator dev",
+    "dev:full": "concurrently --names \"BACK,FRONT,SIM\" --prefix-colors \"cyan,magenta,yellow\" \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\" \"pnpm --filter simulator dev\"",
     "build": "pnpm --filter backend build && pnpm --filter frontend build",
     "docker:up": "docker compose up -d",
     "docker:up:infra": "docker compose up -d mariadb mosquitto",

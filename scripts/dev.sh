@@ -3,17 +3,22 @@
 # dev.sh — Levanta el stack completo de desarrollo
 #   • Servicios de infra (MariaDB + Mosquitto) via Docker
 #   • Backend y Frontend en modo watch en procesos locales
+#   • Simulador opcional con --sim
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# Colores
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
+
+WITH_SIM=false
+for arg in "$@"; do
+  [[ "$arg" == "--sim" ]] && WITH_SIM=true
+done
 
 echo -e "${CYAN}🛡️  Guardián Silobolsa — Dev${NC}"
 echo "──────────────────────────────────────"
@@ -29,7 +34,6 @@ fi
 echo -e "\n${GREEN}🐳  Levantando MariaDB y Mosquitto...${NC}"
 docker compose up -d mariadb mosquitto
 
-# Esperar a que MariaDB esté lista
 echo -e "${GREEN}⏳  Esperando a que MariaDB esté lista...${NC}"
 until docker exec guardian_mariadb healthcheck.sh --connect --innodb_initialized 2>/dev/null; do
   sleep 2
@@ -42,7 +46,13 @@ if [ ! -d "node_modules" ]; then
   pnpm install
 fi
 
-# 4. Levantar backend y frontend en paralelo
-echo -e "\n${GREEN}🚀  Iniciando backend y frontend...${NC}"
+# 4. Levantar procesos
+echo -e "\n${GREEN}🚀  Iniciando servicios...${NC}"
 echo "──────────────────────────────────────"
-pnpm dev
+
+if [ "$WITH_SIM" = true ]; then
+  echo -e "${YELLOW}🤖  Simulador de sensores activado${NC}\n"
+  pnpm dev:full
+else
+  pnpm dev
+fi
