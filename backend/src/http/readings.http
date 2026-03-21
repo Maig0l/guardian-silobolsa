@@ -1,6 +1,6 @@
 @base = http://localhost:3000/api
 @contentType = Content-Type: application/json
-@token = <PEGAR_TOKEN_AQUI>
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhbGVAZ3VhcmRpYW4uY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NzQxMjM2MzUsImV4cCI6MTc3NDcyODQzNX0.9DASoU76yODOjFMjDacPqCHuik6SQqtNYpfCTfon8dA
 @auth = Authorization: Bearer {{token}}
 @sensorId = 1
 @silobagId = 1

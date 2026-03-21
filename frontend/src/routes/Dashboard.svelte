@@ -1,6 +1,6 @@
 <script>
-  import { push } from 'svelte-spa-router'
-  import { currentUser, campos, alertas, silobolsas, sensores, crearCampo, addToast } from '../lib/stores/app.js'
+  import { navigate } from '../lib/router.js'
+  import { currentUser, campos, alertas, crearCampo, loadInitialData, addToast } from '../lib/stores/app.js'
   import AlertBanner from '../lib/components/AlertBanner.svelte'
   import StatusBadge from '../lib/components/StatusBadge.svelte'
 
@@ -8,36 +8,43 @@
   let nuevoCampoNombre = ''
   let nuevoCampoUbicacion = ''
   let formError = ''
+  let loading = false
 
-  function verCampo(id) { push('/campo/' + id) }
+  // Recarga los datos al entrar al dashboard
+  loadInitialData().catch(() => {})
 
-  function verSilo(id) { push('/silobolsa/' + id) }
+  function verCampo(id) { navigate('/campo/' + id) }
+  function verSilo(id)  { navigate('/silobolsa/' + id) }
 
   function getCampoAlertas(campoId) {
     return $alertas.filter(a => a.campoId === campoId)
   }
 
-  function getSilobolsasCount(campo) { return campo.silobolsas.length }
-  function getSensoresCount(campo) { return campo.sensores.length }
-
   function estadoCampo(campo) {
-    const tieneAlerta = $alertas.some(a => a.campoId === campo.id && a.nivel === 'critica')
+    const tieneAlerta     = $alertas.some(a => a.campoId === campo.id && a.nivel === 'critica')
     const tieneAdvertencia = $alertas.some(a => a.campoId === campo.id)
     if (tieneAlerta) return 'alerta'
     if (tieneAdvertencia) return 'advertencia'
     return 'activo'
   }
 
-  function submitNuevoCampo() {
+  async function submitNuevoCampo() {
     formError = ''
-    if (!nuevoCampoNombre.trim()) { formError = 'El nombre es requerido.'; return }
+    if (!nuevoCampoNombre.trim())    { formError = 'El nombre es requerido.';    return }
     if (!nuevoCampoUbicacion.trim()) { formError = 'La ubicación es requerida.'; return }
-    const id = crearCampo(nuevoCampoNombre.trim(), nuevoCampoUbicacion.trim())
-    addToast(`Campo "${nuevoCampoNombre}" creado exitosamente.`)
-    showModal = false
-    nuevoCampoNombre = ''
-    nuevoCampoUbicacion = ''
-    push('/campo/' + id)
+    loading = true
+    try {
+      const id = await crearCampo(nuevoCampoNombre.trim(), nuevoCampoUbicacion.trim())
+      addToast(`Campo "${nuevoCampoNombre}" creado exitosamente.`)
+      showModal = false
+      nuevoCampoNombre = ''
+      nuevoCampoUbicacion = ''
+      navigate('/campo/' + id)
+    } catch (e) {
+      formError = e.message ?? 'Error al crear el campo.'
+    } finally {
+      loading = false
+    }
   }
 </script>
 
@@ -72,7 +79,9 @@
     <div class="campos-grid">
       {#each $campos as campo}
         {@const alertasCampo = getCampoAlertas(campo.id)}
-        <div class="campo-card" role="button" tabindex="0" on:keydown={(e) => e.key==="Enter" && verCampo(campo.id)} on:click={() => verCampo(campo.id)}>
+        <div class="campo-card" role="button" tabindex="0"
+          on:keydown={(e) => e.key==="Enter" && verCampo(campo.id)}
+          on:click={() => verCampo(campo.id)}>
           <div class="campo-card-header">
             <div>
               <h3 class="campo-nombre">{campo.nombre}</h3>
@@ -83,12 +92,12 @@
 
           <div class="campo-stats">
             <div class="stat">
-              <span class="stat-val">{getSilobolsasCount(campo)}</span>
+              <span class="stat-val">{campo.silobolsas.length}</span>
               <span class="stat-lbl">Silobolsas</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat">
-              <span class="stat-val">{getSensoresCount(campo)}</span>
+              <span class="stat-val">{campo.sensores.length}</span>
               <span class="stat-lbl">Sensores</span>
             </div>
             {#if alertasCampo.length > 0}
@@ -138,7 +147,7 @@
         </div>
         <div class="modal-actions">
           <button type="button" class="btn-secondary" on:click={() => showModal = false}>Cancelar</button>
-          <button type="submit" class="btn-primary">Crear campo</button>
+          <button type="submit" class="btn-primary" disabled={loading}>{loading ? 'Creando...' : 'Crear campo'}</button>
         </div>
       </form>
     </div>
@@ -146,164 +155,52 @@
 {/if}
 
 <style>
-  .dashboard {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 32px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-  }
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
+  .dashboard { max-width: 1200px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 28px; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .page-title { font-family: var(--font-serif); font-size: 28px; color: var(--green-800); }
   .page-sub { font-size: 14px; color: var(--gray-500); margin-top: 4px; }
-
   .section-header { display: flex; align-items: center; gap: 12px; }
   .section-title { font-size: 18px; font-weight: 600; color: var(--gray-900); }
-  .section-count {
-    background: var(--green-50); color: var(--green-700);
-    font-size: 12px; font-weight: 600; padding: 3px 10px;
-    border-radius: 20px;
-  }
-
-  .campos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-  }
-  .campo-card {
-    background: var(--white);
-    border: 0.5px solid var(--gray-300);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    cursor: pointer;
-    transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .campo-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--green-300);
-    transform: translateY(-1px);
-  }
+  .section-count { background: var(--green-50); color: var(--green-700); font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .campos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .campo-card { background: var(--white); border: 0.5px solid var(--gray-300); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s; display: flex; flex-direction: column; gap: 14px; }
+  .campo-card:hover { box-shadow: var(--shadow-md); border-color: var(--green-300); transform: translateY(-1px); }
   .campo-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .campo-nombre { font-size: 17px; font-weight: 600; color: var(--green-800); }
   .campo-ubicacion { font-size: 13px; color: var(--gray-500); margin-top: 3px; }
-
-  .campo-stats {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--green-50);
-    border-radius: var(--radius-md);
-    padding: 12px 16px;
-  }
+  .campo-stats { display: flex; align-items: center; gap: 16px; background: var(--green-50); border-radius: var(--radius-md); padding: 12px 16px; }
   .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .stat-val { font-size: 22px; font-weight: 700; color: var(--green-700); line-height: 1; }
   .stat-val--alert { color: var(--amber-600); }
   .stat-lbl { font-size: 11px; color: var(--gray-500); font-weight: 500; }
   .stat-divider { width: 1px; height: 28px; background: var(--green-200); }
-
-  .campo-alert-preview {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--amber-100);
-    border-radius: var(--radius-sm);
-    padding: 8px 10px;
-  }
-  .alert-dot-sm {
-    width: 6px; height: 6px;
-    border-radius: 50%; background: var(--amber-600);
-    flex-shrink: 0;
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; } 50% { opacity: 0.5; }
-  }
+  .campo-alert-preview { display: flex; align-items: center; gap: 8px; background: var(--amber-100); border-radius: var(--radius-sm); padding: 8px 10px; }
+  .alert-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-600); flex-shrink: 0; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   .alert-preview-txt { font-size: 12px; color: #92400E; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
   .campo-footer { border-top: 0.5px solid var(--gray-100); padding-top: 10px; }
   .ver-mas { font-size: 13px; font-weight: 600; color: var(--green-600); }
-
-  .empty-state {
-    text-align: center;
-    padding: 64px 24px;
-    background: var(--white);
-    border: 0.5px dashed var(--gray-300);
-    border-radius: var(--radius-xl);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
+  .empty-state { text-align: center; padding: 64px 24px; background: var(--white); border: 0.5px dashed var(--gray-300); border-radius: var(--radius-xl); display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .empty-icon { font-size: 48px; }
   .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--gray-700); }
   .empty-state p { font-size: 14px; color: var(--gray-500); }
-
-  .btn-primary {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--green-800); color: var(--green-50);
-    border: none; padding: 10px 20px;
-    border-radius: var(--radius-md); font-size: 14px; font-weight: 600;
-    transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
-  }
-  .btn-primary:hover { background: var(--green-700); }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-secondary {
-    background: var(--white); color: var(--gray-700);
-    border: 1px solid var(--gray-300); padding: 10px 20px;
-    border-radius: var(--radius-md); font-size: 14px; font-weight: 500;
-  }
+  .btn-primary { display: flex; align-items: center; gap: 6px; background: var(--green-800); color: var(--green-50); border: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; transition: background 0.15s, transform 0.1s; white-space: nowrap; }
+  .btn-primary:hover:not(:disabled) { background: var(--green-700); }
+  .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-secondary { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-300); padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; }
   .btn-secondary:hover { background: var(--gray-50); }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.35);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 200; padding: 24px;
-  }
-  .modal {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    width: 100%; max-width: 440px;
-    box-shadow: var(--shadow-lg);
-    overflow: hidden;
-  }
-  .modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 0.5px solid var(--gray-300);
-  }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+  .modal { background: var(--white); border-radius: var(--radius-xl); width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); overflow: hidden; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 0.5px solid var(--gray-300); }
   .modal-title { font-size: 17px; font-weight: 600; color: var(--gray-900); }
-  .modal-close {
-    background: none; border: none; font-size: 16px;
-    color: var(--gray-400); width: 28px; height: 28px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  }
+  .modal-close { background: none; border: none; font-size: 16px; color: var(--gray-400); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .modal-close:hover { background: var(--gray-100); color: var(--gray-700); }
   .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
-  .input {
-    padding: 10px 14px; border: 1px solid var(--gray-300);
-    border-radius: var(--radius-md); font-size: 14px; outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
+  .input { padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
   .input:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(91,140,62,0.12); }
-  .form-error {
-    background: var(--red-50); border: 1px solid #FCA5A5;
-    color: var(--red-600); padding: 10px 14px;
-    border-radius: var(--radius-md); font-size: 13px;
-  }
+  .form-error { background: var(--red-50); border: 1px solid #FCA5A5; color: var(--red-600); padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; }
 </style>
