@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guardián Silobolsa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --green-900: #1A2E0E;
+        --green-800: #2D4A1E;
+        --green-700: #3B6B20;
+        --green-600: #4A7D28;
+        --green-500: #5B8C3E;
+        --green-400: #7AAD58;
+        --green-300: #A8C97A;
+        --green-200: #C8DFA6;
+        --green-100: #E0EFC8;
+        --green-50:  #EAF3DE;
+        --amber-600: #D97706;
+        --amber-100: #FEF3E2;
+        --amber-200: #FDE68A;
+        --red-600:   #DC2626;
+        --red-50:    #FEF2F2;
+        --gray-900:  #111827;
+        --gray-700:  #374151;
+        --gray-500:  #6B7280;
+        --gray-300:  #D1D5DB;
+        --gray-100:  #F3F4F6;
+        --gray-50:   #F9FAFB;
+        --white:     #FFFFFF;
+        --font-serif: 'DM Serif Display', Georgia, serif;
+        --font-sans:  'DM Sans', system-ui, sans-serif;
+        --radius-sm:  6px;
+        --radius-md:  10px;
+        --radius-lg:  16px;
+        --radius-xl:  22px;
+        --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        --shadow-md:  0 4px 16px rgba(45,74,30,0.08), 0 1px 4px rgba(0,0,0,0.04);
+        --shadow-lg:  0 8px 32px rgba(45,74,30,0.12), 0 2px 8px rgba(0,0,0,0.06);
+      }
+      html, body { height: 100%; }
+      body {
+        font-family: var(--font-sans);
+        background: var(--gray-50);
+        color: var(--gray-900);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      #app { height: 100%; }
+      button { font-family: var(--font-sans); cursor: pointer; }
+      input, select, textarea { font-family: var(--font-sans); }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
