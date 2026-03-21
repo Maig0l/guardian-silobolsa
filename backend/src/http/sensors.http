@@ -1,0 +1,42 @@
+@base = http://localhost:3000/api
+@contentType = Content-Type: application/json
+@token = <PEGAR_TOKEN_AQUI>
+@auth = Authorization: Bearer {{token}}
+@fieldId = 1
+@sensorId = 1
+
+### ── Listar sensores del campo ──────────────────────────────────────────────
+GET {{base}}/fields/{{fieldId}}/sensors
+{{auth}}
+
+### ── Sensores disponibles (sin silobolsa vinculada) ─────────────────────────
+GET {{base}}/fields/{{fieldId}}/sensors/available
+{{auth}}
+
+### ── Ver sensor por ID ───────────────────────────────────────────────────────
+GET {{base}}/fields/{{fieldId}}/sensors/{{sensorId}}
+{{auth}}
+
+### ── Crear sensor ────────────────────────────────────────────────────────────
+# La api_key se genera automáticamente desde la MAC address (HMAC-SHA256)
+POST {{base}}/fields/{{fieldId}}/sensors
+{{auth}}
+{{contentType}}
+
+{
+  "modelo": "SHT31-LoRa v2",
+  "mac_address": "A4:C3:F0:12:34:56"
+}
+
+### ── Actualizar sensor ───────────────────────────────────────────────────────
+PATCH {{base}}/fields/{{fieldId}}/sensors/{{sensorId}}
+{{auth}}
+{{contentType}}
+
+{
+  "estado": "FALLA"
+}
+
+### ── Eliminar sensor ─────────────────────────────────────────────────────────
+DELETE {{base}}/fields/{{fieldId}}/sensors/{{sensorId}}
+{{auth}}

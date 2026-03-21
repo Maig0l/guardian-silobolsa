@@ -2,7 +2,7 @@
 node_modules/
 .pnpm-store/
 
-# Environment variables
+# Environment variables — NUNCA commitear .env real
 .env
 .env.local
 .env.development.local
@@ -22,17 +22,15 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Runtime data
+# Runtime
 pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output
 
 # IDE
@@ -51,13 +49,16 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
+# Docker data (generado en runtime)
+mosquitto/data/
+mosquitto/log/
+docker/mosquitto/data/
+docker/mosquitto/log/
 
-# Database
+# DB
 *.sqlite
 *.db
 
-# Temporary files
+# Temp
 tmp/
 temp/

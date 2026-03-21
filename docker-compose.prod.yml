@@ -1,92 +1,87 @@
-version: '3.8'
+name: guardian-silobolsa-prod
 
 services:
-  # Database
+
+  # ── MariaDB ────────────────────────────────────────────────
   mariadb:
-    image: mariadb:10.11
-    container_name: guardian-mariadb-prod
+    image: mariadb:11
+    container_name: guardian_mariadb_prod
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mariadb_prod_data:/var/lib/mysql
     networks:
-      - guardian-prod-network
+      - guardian_prod_net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # MQTT Broker
+  # ── Mosquitto MQTT ─────────────────────────────────────────
   mosquitto:
-    image: eclipse-mosquitto:2.0
-    container_name: guardian-mosquitto-prod
+    image: eclipse-mosquitto:2
+    container_name: guardian_mosquitto_prod
     restart: always
     volumes:
       - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto_prod_data:/mosquitto/data
       - mosquitto_prod_logs:/mosquitto/log
     networks:
-      - guardian-prod-network
+      - guardian_prod_net
     healthcheck:
       test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Backend (Production)
+  # ── Backend ────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
-    container_name: guardian-backend-prod
+      dockerfile: Dockerfile
+    container_name: guardian_backend_prod
     restart: always
+    env_file: .env
     environment:
       NODE_ENV: production
       DB_HOST: mariadb
-      DB_PORT: 3306
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      MQTT_BROKER_URL: mqtt://mosquitto:1883
-      MQTT_CLIENT_ID: guardian_backend_prod
-      BACKEND_PORT: 3000
-      JWT_SECRET: ${JWT_SECRET}
+      MQTT_BROKER_URL: mqtt://mosquitto
     depends_on:
       mariadb:
         condition: service_healthy
       mosquitto:
         condition: service_healthy
     networks:
-      - guardian-prod-network
+      - guardian_prod_net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Frontend (Production)
+  # ── Frontend ───────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-    container_name: guardian-frontend-prod
+    container_name: guardian_frontend_prod
     restart: always
     environment:
-      VITE_API_BASE_URL: http://backend:3000/api
-      VITE_WS_URL: ws://backend:3000
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     depends_on:
       - backend
     networks:
-      - guardian-prod-network
+      - guardian_prod_net
 
-  # Nginx Reverse Proxy
+  # ── Nginx Reverse Proxy ─────────────────────────────────────
   nginx:
     image: nginx:alpine
-    container_name: guardian-nginx
+    container_name: guardian_nginx
     restart: always
     ports:
       - "80:80"
@@ -98,7 +93,7 @@ services:
       - backend
       - frontend
     networks:
-      - guardian-prod-network
+      - guardian_prod_net
 
 volumes:
   mariadb_prod_data:
@@ -106,5 +101,5 @@ volumes:
   mosquitto_prod_logs:
 
 networks:
-  guardian-prod-network:
+  guardian_prod_net:
     driver: bridge

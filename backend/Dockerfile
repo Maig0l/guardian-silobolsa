@@ -1,32 +1,35 @@
-FROM node:18-alpine
+# ─── Stage 1: build ───────────────────────────────────────────────────────────
+FROM node:22-alpine AS builder
+
+# pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
-COPY tsconfig.json ./
-
-# Install dependencies
+COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY src/ ./src/
+COPY tsconfig.json mikro-orm.config.ts ./
+COPY src ./src
 
-# Create logs directory
-RUN mkdir -p logs
-
-# Build the application
 RUN pnpm build
 
-# Expose port
+# ─── Stage 2: runtime ─────────────────────────────────────────────────────────
+FROM node:22-alpine AS runner
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod
+
+# Copia artefactos compilados y config de ORM
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/mikro-orm.config.ts ./mikro-orm.config.ts
+
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
-
-# Start the application
-CMD ["pnpm", "dev"]
+CMD ["node", "dist/server.js"]

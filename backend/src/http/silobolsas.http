@@ -1,0 +1,55 @@
+@base = http://localhost:3000/api
+@contentType = Content-Type: application/json
+@token = <PEGAR_TOKEN_AQUI>
+@auth = Authorization: Bearer {{token}}
+@fieldId = 1
+@silobagId = 1
+@sensorId = 1
+
+### ── Listar silobolsas del campo ────────────────────────────────────────────
+GET {{base}}/fields/{{fieldId}}/silobolsas
+{{auth}}
+
+### ── Ver silobolsa por ID ───────────────────────────────────────────────────
+GET {{base}}/fields/{{fieldId}}/silobolsas/{{silobagId}}
+{{auth}}
+
+### ── Crear silobolsa ────────────────────────────────────────────────────────
+POST {{base}}/fields/{{fieldId}}/silobolsas
+{{auth}}
+{{contentType}}
+
+{
+  "marca": "Ipesa",
+  "capacidad_max": 200,
+  "ubicacion": "Lote norte, cabecera izquierda",
+  "grano": "SOJA",
+  "observaciones": "Embolsado en marzo 2024"
+}
+
+### ── Actualizar silobolsa ───────────────────────────────────────────────────
+PATCH {{base}}/fields/{{fieldId}}/silobolsas/{{silobagId}}
+{{auth}}
+{{contentType}}
+
+{
+  "estado": "LLENO",
+  "observaciones": "Control realizado 15/06/2024 sin novedades"
+}
+
+### ── Vincular sensor a silobolsa ────────────────────────────────────────────
+POST {{base}}/fields/{{fieldId}}/silobolsas/{{silobagId}}/link
+{{auth}}
+{{contentType}}
+
+{
+  "sensor_id": {{sensorId}}
+}
+
+### ── Desvincular sensor de silobolsa ────────────────────────────────────────
+DELETE {{base}}/fields/{{fieldId}}/silobolsas/{{silobagId}}/link
+{{auth}}
+
+### ── Eliminar silobolsa ─────────────────────────────────────────────────────
+DELETE {{base}}/fields/{{fieldId}}/silobolsas/{{silobagId}}
+{{auth}}

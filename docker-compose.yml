@@ -1,88 +1,85 @@
-version: '3.8'
+name: guardian-silobolsa
 
 services:
-  # Database
+
+  # ── MariaDB ────────────────────────────────────────────────
   mariadb:
-    image: mariadb:10.11
-    container_name: guardian-mariadb
+    image: mariadb:11
+    container_name: guardian_mariadb
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: guardian_silobolsa
-      MYSQL_USER: guardian_user
-      MYSQL_PASSWORD: secure_password
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
+      MARIADB_DATABASE: ${DB_NAME:-guardian_silobolsa}
+      MARIADB_USER: ${DB_USER:-guardian}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-guardian_pass}
     ports:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
-      - ./docker/mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - guardian-network
+      - guardian_net
 
-  # MQTT Broker
+  # ── Mosquitto MQTT ─────────────────────────────────────────
   mosquitto:
-    image: eclipse-mosquitto:2.0
-    container_name: guardian-mosquitto
+    image: eclipse-mosquitto:2
+    container_name: guardian_mosquitto
     restart: unless-stopped
     ports:
       - "1883:1883"
       - "9001:9001"
     volumes:
-      - ./docker/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./docker/mosquitto:/mosquitto/config
       - mosquitto_data:/mosquitto/data
       - mosquitto_logs:/mosquitto/log
     networks:
-      - guardian-network
+      - guardian_net
 
-  # Backend (Development)
+  # ── Backend ────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: guardian-backend
+    container_name: guardian_backend
     restart: unless-stopped
+    env_file: .env
     environment:
-      NODE_ENV: development
       DB_HOST: mariadb
-      DB_PORT: 3306
-      DB_USER: guardian_user
-      DB_PASSWORD: secure_password
-      DB_NAME: guardian_silobolsa
-      MQTT_BROKER_URL: mqtt://mosquitto:1883
-      MQTT_CLIENT_ID: guardian_backend
-      BACKEND_PORT: 3000
+      MQTT_BROKER_URL: mqtt://mosquitto
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend/src:/app/src
     depends_on:
-      - mariadb
-      - mosquitto
+      mariadb:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
     networks:
-      - guardian-network
+      - guardian_net
     command: pnpm dev
 
-  # Frontend (Development)
+  # ── Frontend ───────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: guardian-frontend
+    container_name: guardian_frontend
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:3000/api
-      VITE_WS_URL: ws://localhost:3000
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000/api}
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - ./frontend/src:/app/src
     depends_on:
       - backend
     networks:
-      - guardian-network
-    command: pnpm dev
+      - guardian_net
 
 volumes:
   mariadb_data:
@@ -90,5 +87,5 @@ volumes:
   mosquitto_logs:
 
 networks:
-  guardian-network:
+  guardian_net:
     driver: bridge

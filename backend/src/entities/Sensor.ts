@@ -1,43 +1,52 @@
-import { Entity, PrimaryKey, Property, ManyToOne, OneToMany, Collection, Rel } from '@mikro-orm/core';
-import { Campo } from './Campo';
-import { SilobolsaSensorLink } from './SilobolsaSensorLink';
-import { Lectura } from './Lectura';
+import {
+  Collection,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/core';
+import { Field } from './Field.js';
+import { SilobagSensorLink } from './SilobagSensorLink.js';
+import { Reading } from './Reading.js';
 
-@Entity()
+export enum SensorStatus {
+  ACTIVO = 'ACTIVO',
+  INACTIVO = 'INACTIVO',
+  FALLA = 'FALLA',
+}
+
+@Entity({ tableName: 'sensor' })
 export class Sensor {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @ManyToOne(() => Campo)
-  campo!: Rel<Campo>;
+  @ManyToOne(() => Field)
+  campo!: Field;
 
-  @Property({ type: 'string' })
+  @Property({ length: 100, type: 'string' })
   modelo!: string;
 
-  @Property({ type: 'string', unique: true })
+  @Unique()
+  @Property({ length: 50, type: 'string' })
   mac_address!: string;
 
-  @Property({ type: 'string', nullable: true })
-  api_key?: string;
+  @Property({ length: 64, type: 'string' })
+  api_key!: string;
 
-  @Property({ type: 'string', default: 'ACTIVO' })
-  estado!: string;
+  @Property({ length: 20, default: SensorStatus.ACTIVO })
+  estado: string = SensorStatus.ACTIVO;
 
-  @Property({ type: 'Date' })
-  createdAt!: Date;
+  @Property({ onCreate: () => new Date() })
+  createdAt: Date = new Date();
 
-  @Property({ type: 'Date', onUpdate: () => new Date() })
-  updatedAt!: Date;
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date();
 
-  @OneToMany(() => SilobolsaSensorLink, link => link.sensor)
-  silobolsaLinks = new Collection<SilobolsaSensorLink>(this);
+  @OneToMany(() => SilobagSensorLink, (link) => link.sensor)
+  links = new Collection<SilobagSensorLink>(this);
 
-  @OneToMany(() => Lectura, lectura => lectura.sensor)
-  lecturas = new Collection<Lectura>(this);
-
-  constructor(data: Partial<Sensor>) {
-    Object.assign(this, data);
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-  }
+  @OneToMany(() => Reading, (reading) => reading.sensor)
+  lecturas = new Collection<Reading>(this);
 }

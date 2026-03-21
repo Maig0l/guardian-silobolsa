@@ -1,0 +1,34 @@
+@base = http://localhost:3000/api
+@contentType = Content-Type: application/json
+@token = <PEGAR_TOKEN_AQUI>
+@auth = Authorization: Bearer {{token}}
+@sensorId = 1
+@silobagId = 1
+
+### ── Alertas activas del usuario (dashboard) ────────────────────────────────
+GET {{base}}/readings/alerts
+{{auth}}
+
+### ── Lecturas últimas 24 horas por sensor ───────────────────────────────────
+GET {{base}}/readings/sensor/{{sensorId}}?hours=24
+{{auth}}
+
+### ── Lecturas últimas 48 horas por sensor ───────────────────────────────────
+GET {{base}}/readings/sensor/{{sensorId}}?hours=48
+{{auth}}
+
+### ── Lecturas últimas 24 horas por silobolsa (para gráficos) ────────────────
+GET {{base}}/readings/silobag/{{silobagId}}?hours=24
+{{auth}}
+
+### ── Simular lectura MQTT desde terminal ────────────────────────────────────
+# Reemplazar <API_KEY> con la api_key real del sensor
+# Ejecutar desde la terminal del host (requiere mosquitto-clients):
+#
+# mosquitto_pub \
+#   -h localhost -p 1883 \
+#   -u guardian_backend -P mqtt_pass \
+#   -t "guardian/readings/<API_KEY>" \
+#   -m '{"hum":15.2,"temp":38.1,"co2":6200}'
+#
+# Esos valores superan los umbrales → debería disparar alerta + notificación

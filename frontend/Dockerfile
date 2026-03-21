@@ -7,16 +7,13 @@ RUN npm install -g pnpm
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
-COPY svelte.config.js ./
-COPY vite.config.ts ./
-COPY tsconfig.json ./
+COPY vite.config.js ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source code
 COPY src/ ./src/
-COPY static/ ./static/
 
 # Expose port
 EXPOSE 5173

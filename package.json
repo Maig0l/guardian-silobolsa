@@ -4,13 +4,16 @@
   "description": "Sistema de monitoreo IoT para silobolsas agrícolas",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
+    "dev": "concurrently --names \"BACK,FRONT\" --prefix-colors \"cyan,magenta\" \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm --filter backend build && pnpm --filter frontend build",
-    "docker:dev": "docker-compose up -d",
-    "docker:prod": "docker-compose -f docker-compose.prod.yml up -d --build",
-    "docker:down": "docker-compose down"
+    "docker:up": "docker compose up -d",
+    "docker:up:infra": "docker compose up -d mariadb mosquitto",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:prod": "docker compose -f docker-compose.prod.yml up -d --build",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml down"
   },
   "keywords": ["iot", "agriculture", "monitoring", "mqtt", "silobolsa"],
   "author": "Guardian Silobolsa Team",
