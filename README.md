@@ -99,7 +99,7 @@ docker compose logs -f mariadb
 
 ### 4. Configurar la contraseña de Mosquitto
 
-La primera vez hay que crear el archivo de contraseñas del broker MQTT:
+La primera vez hay que crear el archivo de contraseñas del broker MQTT (este paso se puede saltar porque en el repo ya viene configurado con la contraseña por defecto):
 
 ```bash
 # Primero editá docker/mosquitto/mosquitto.conf y comentá la línea password_file:
@@ -128,6 +128,7 @@ pnpm install
 
 ```bash
 cd backend
+pnpm build
 pnpm schema:create
 cd ..
 ```

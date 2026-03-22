@@ -15,14 +15,14 @@ export default defineConfig({
   password: process.env.DB_PASSWORD ?? '',
   dbName: process.env.DB_NAME ?? 'guardian_silobolsa',
 
-  entities: ['./dist/entities/*.js'],
+  entities: ['./dist/src/entities/*.js'],
   entitiesTs: ['./src/entities/*.ts'],
 
   debug: process.env.NODE_ENV === 'development',
 
   extensions: [Migrator],
   migrations: {
-    path: './dist/migrations',
+    path: './dist/src/migrations',
     pathTs: './src/migrations',
     glob: '!(*.d).{js,ts}',
     transactional: true,
