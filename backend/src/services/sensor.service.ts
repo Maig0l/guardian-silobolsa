@@ -21,7 +21,7 @@ async function assertFieldOwnership(fieldId: number, userId: number) {
 export async function getSensorsByField(fieldId: number, userId: number) {
   await assertFieldOwnership(fieldId, userId);
   const em = getEM();
-  return em.find(Sensor, { campo: fieldId });
+  return em.find(Sensor, { campo: fieldId }, { populate: ['links', 'links.silobolsa'] });
 }
 
 export async function getSensorById(id: number, userId: number) {

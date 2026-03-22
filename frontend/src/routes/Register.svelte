@@ -73,7 +73,7 @@
 
 <style>
   .register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 24px; background: linear-gradient(135deg, var(--green-50) 0%, var(--white) 60%); }
-  .register-card { background: var(--white); border: 0.5px solid var(--gray-300); border-radius: var(--radius-xl); padding: 40px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg); }
+  .register-card { background: var(--white); border: 0.5px solid var(--gray-300); border-radius: var(--radius-xl); padding: 40px; width: 100%; max-width: 540px; box-shadow: var(--shadow-lg); }
   .back-link { background: none; border: none; color: var(--green-700); font-size: 13px; padding: 0; margin-bottom: 24px; display: block; }
   .back-link:hover { color: var(--green-800); }
   .form-title { font-family: var(--font-serif); font-size: 28px; color: var(--green-800); }
@@ -81,10 +81,12 @@
   .form-error { background: var(--red-50); border: 1px solid #FCA5A5; color: var(--red-600); padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; }
   .form { display: flex; flex-direction: column; gap: 16px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row > .field { min-width: 0; }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
   .input { padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 14px; color: var(--gray-900); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
   .input:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(91,140,62,0.12); }
+  @media (max-width: 560px) { .register-card { padding: 28px 20px; } .row { grid-template-columns: 1fr; } }
   .btn-primary { background: var(--green-800); color: var(--green-50); border: none; padding: 11px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; margin-top: 4px; transition: background 0.15s; }
   .btn-primary:hover:not(:disabled) { background: var(--green-700); }
   .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }

@@ -1,6 +1,6 @@
 <script>
   import { navigate } from '../lib/router.js'
-  import { currentUser, campos, alertas, crearCampo, loadInitialData, addToast } from '../lib/stores/app.js'
+  import { currentUser, campos, alertas, crearCampo, eliminarCampo, loadInitialData, dismissAlerta, dismissTodasAlertas, addToast } from '../lib/stores/app.js'
   import AlertBanner from '../lib/components/AlertBanner.svelte'
   import StatusBadge from '../lib/components/StatusBadge.svelte'
 
@@ -9,8 +9,8 @@
   let nuevoCampoUbicacion = ''
   let formError = ''
   let loading = false
+  let confirmDeleteId = null
 
-  // Recarga los datos al entrar al dashboard
   loadInitialData().catch(() => {})
 
   function verCampo(id) { navigate('/campo/' + id) }
@@ -21,7 +21,7 @@
   }
 
   function estadoCampo(campo) {
-    const tieneAlerta     = $alertas.some(a => a.campoId === campo.id && a.nivel === 'critica')
+    const tieneAlerta      = $alertas.some(a => a.campoId === campo.id && a.nivel === 'critica')
     const tieneAdvertencia = $alertas.some(a => a.campoId === campo.id)
     if (tieneAlerta) return 'alerta'
     if (tieneAdvertencia) return 'advertencia'
@@ -46,6 +46,16 @@
       loading = false
     }
   }
+
+  async function handleEliminarCampo(id, nombre) {
+    confirmDeleteId = null
+    try {
+      await eliminarCampo(id)
+      addToast(`Campo "${nombre}" eliminado.`)
+    } catch (e) {
+      addToast(e.message ?? 'Error al eliminar el campo.', 'error')
+    }
+  }
 </script>
 
 <div class="dashboard">
@@ -60,7 +70,12 @@
   </div>
 
   {#if $alertas.length}
-    <AlertBanner alertas={$alertas} onVerSilo={verSilo} />
+    <AlertBanner
+      alertas={$alertas}
+      onVerSilo={verSilo}
+      onDismiss={dismissAlerta}
+      onDismissAll={dismissTodasAlertas}
+    />
   {/if}
 
   <div class="section-header">
@@ -79,45 +94,64 @@
     <div class="campos-grid">
       {#each $campos as campo}
         {@const alertasCampo = getCampoAlertas(campo.id)}
-        <div class="campo-card" role="button" tabindex="0"
-          on:keydown={(e) => e.key==="Enter" && verCampo(campo.id)}
-          on:click={() => verCampo(campo.id)}>
-          <div class="campo-card-header">
-            <div>
-              <h3 class="campo-nombre">{campo.nombre}</h3>
-              <p class="campo-ubicacion">📍 {campo.ubicacion}</p>
+        <div class="campo-card">
+          <!-- Zona clickeable para navegar -->
+          <div class="campo-card-body" role="button" tabindex="0"
+            on:keydown={(e) => e.key==="Enter" && verCampo(campo.id)}
+            on:click={() => verCampo(campo.id)}>
+            <div class="campo-card-header">
+              <div>
+                <h3 class="campo-nombre">{campo.nombre}</h3>
+                <p class="campo-ubicacion">📍 {campo.ubicacion}</p>
+              </div>
+              <StatusBadge estado={estadoCampo(campo)} />
             </div>
-            <StatusBadge estado={estadoCampo(campo)} />
-          </div>
 
-          <div class="campo-stats">
-            <div class="stat">
-              <span class="stat-val">{campo.silobolsas.length}</span>
-              <span class="stat-lbl">Silobolsas</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat">
-              <span class="stat-val">{campo.sensores.length}</span>
-              <span class="stat-lbl">Sensores</span>
-            </div>
-            {#if alertasCampo.length > 0}
+            <div class="campo-stats">
+              <div class="stat">
+                <span class="stat-val">{campo.silobolsas.length}</span>
+                <span class="stat-lbl">Silobolsas</span>
+              </div>
               <div class="stat-divider"></div>
               <div class="stat">
-                <span class="stat-val stat-val--alert">{alertasCampo.length}</span>
-                <span class="stat-lbl">Alertas</span>
+                <span class="stat-val">{campo.sensores.length}</span>
+                <span class="stat-lbl">Sensores</span>
+              </div>
+              {#if alertasCampo.length > 0}
+                <div class="stat-divider"></div>
+                <div class="stat">
+                  <span class="stat-val stat-val--alert">{alertasCampo.length}</span>
+                  <span class="stat-lbl">Alertas</span>
+                </div>
+              {/if}
+            </div>
+
+            {#if alertasCampo.length > 0}
+              <div class="campo-alert-preview">
+                <span class="alert-dot-sm"></span>
+                <span class="alert-preview-txt">{alertasCampo[0].mensaje}</span>
               </div>
             {/if}
           </div>
 
-          {#if alertasCampo.length > 0}
-            <div class="campo-alert-preview">
-              <span class="alert-dot-sm"></span>
-              <span class="alert-preview-txt">{alertasCampo[0].mensaje}</span>
-            </div>
-          {/if}
-
+          <!-- Footer con acciones -->
           <div class="campo-footer">
-            <span class="ver-mas">Ver campo →</span>
+            <span class="ver-mas" role="button" tabindex="0"
+              on:click={() => verCampo(campo.id)}
+              on:keydown={(e) => e.key==="Enter" && verCampo(campo.id)}>
+              Ver campo →
+            </span>
+            {#if confirmDeleteId === campo.id}
+              <div class="confirm-delete">
+                <span class="confirm-txt">¿Eliminar?</span>
+                <button class="btn-confirm-yes" on:click|stopPropagation={() => handleEliminarCampo(campo.id, campo.nombre)}>Sí</button>
+                <button class="btn-confirm-no"  on:click|stopPropagation={() => confirmDeleteId = null}>No</button>
+              </div>
+            {:else}
+              <button class="btn-delete" on:click|stopPropagation={() => confirmDeleteId = campo.id} title="Eliminar campo">
+                🗑
+              </button>
+            {/if}
           </div>
         </div>
       {/each}
@@ -163,8 +197,27 @@
   .section-title { font-size: 18px; font-weight: 600; color: var(--gray-900); }
   .section-count { background: var(--green-50); color: var(--green-700); font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
   .campos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .campo-card { background: var(--white); border: 0.5px solid var(--gray-300); border-radius: var(--radius-lg); padding: 20px; cursor: pointer; transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s; display: flex; flex-direction: column; gap: 14px; }
-  .campo-card:hover { box-shadow: var(--shadow-md); border-color: var(--green-300); transform: translateY(-1px); }
+
+  .campo-card {
+    background: var(--white);
+    border: 0.5px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .campo-card:hover { box-shadow: var(--shadow-md); border-color: var(--green-300); }
+
+  .campo-card-body {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+  }
+  .campo-card-body:hover { background: var(--gray-50); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+
   .campo-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .campo-nombre { font-size: 17px; font-weight: 600; color: var(--green-800); }
   .campo-ubicacion { font-size: 13px; color: var(--gray-500); margin-top: 3px; }
@@ -178,15 +231,39 @@
   .alert-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-600); flex-shrink: 0; animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   .alert-preview-txt { font-size: 12px; color: #92400E; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .campo-footer { border-top: 0.5px solid var(--gray-100); padding-top: 10px; }
-  .ver-mas { font-size: 13px; font-weight: 600; color: var(--green-600); }
+
+  .campo-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-top: 0.5px solid var(--gray-100);
+  }
+  .ver-mas { font-size: 13px; font-weight: 600; color: var(--green-600); cursor: pointer; }
+  .ver-mas:hover { text-decoration: underline; }
+
+  .btn-delete {
+    background: none; border: none;
+    font-size: 15px; cursor: pointer;
+    opacity: 0.4; padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .btn-delete:hover { opacity: 1; background: var(--red-50); }
+
+  .confirm-delete { display: flex; align-items: center; gap: 6px; }
+  .confirm-txt { font-size: 12px; color: var(--red-600); font-weight: 500; }
+  .btn-confirm-yes { background: var(--red-600); color: #fff; border: none; padding: 3px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-confirm-yes:hover { background: #b91c1c; }
+  .btn-confirm-no  { background: var(--gray-100); color: var(--gray-700); border: none; padding: 3px 10px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; }
+  .btn-confirm-no:hover { background: var(--gray-200); }
+
   .empty-state { text-align: center; padding: 64px 24px; background: var(--white); border: 0.5px dashed var(--gray-300); border-radius: var(--radius-xl); display: flex; flex-direction: column; align-items: center; gap: 12px; }
   .empty-icon { font-size: 48px; }
   .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--gray-700); }
   .empty-state p { font-size: 14px; color: var(--gray-500); }
-  .btn-primary { display: flex; align-items: center; gap: 6px; background: var(--green-800); color: var(--green-50); border: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; transition: background 0.15s, transform 0.1s; white-space: nowrap; }
+  .btn-primary { display: flex; align-items: center; gap: 6px; background: var(--green-800); color: var(--green-50); border: none; padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; transition: background 0.15s; white-space: nowrap; }
   .btn-primary:hover:not(:disabled) { background: var(--green-700); }
-  .btn-primary:active:not(:disabled) { transform: scale(0.98); }
   .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
   .btn-secondary { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-300); padding: 10px 20px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; }
   .btn-secondary:hover { background: var(--gray-50); }
@@ -200,7 +277,7 @@
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
   .field { display: flex; flex-direction: column; gap: 6px; }
   .label { font-size: 13px; font-weight: 500; color: var(--gray-700); }
-  .input { padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .input { padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: var(--radius-md); font-size: 14px; outline: none; transition: border-color 0.15s; }
   .input:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(91,140,62,0.12); }
   .form-error { background: var(--red-50); border: 1px solid #FCA5A5; color: var(--red-600); padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; }
 </style>

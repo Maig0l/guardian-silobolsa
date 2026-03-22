@@ -15,15 +15,15 @@ async function connectMqttWithRetry(retries = 10, delayMs = 5000): Promise<void>
       if (attempt < retries) await new Promise((r) => setTimeout(r, delayMs));
     }
   }
-  console.error('❌  No se pudo conectar a MQTT después de varios intentos. Las lecturas de sensores no estarán disponibles hasta reconectar.');
+  console.error('❌  No se pudo conectar a MQTT. Las lecturas no estarán disponibles.');
 }
 
 async function bootstrap() {
   try {
-    // 1. Base de datos (fatal — sin DB no hay nada)
+    // 1. Base de datos (fatal)
     await initDatabase();
 
-    // 2. HTTP server (arranca siempre)
+    // 2. HTTP server
     app.listen(env.PORT, () => {
       console.log(`🚀  Backend corriendo en http://localhost:${env.PORT}`);
       console.log(`📌  Entorno: ${env.NODE_ENV}`);

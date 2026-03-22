@@ -1,7 +1,4 @@
 // ─── Cliente HTTP ─────────────────────────────────────────────────────────────
-// Un token en memoria es suficiente para una SPA — no se pierde entre rutas,
-// solo al recargar la página (en ese caso sessionStorage lo restaura).
-
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 
 let _token = sessionStorage.getItem('gs_token') || null
@@ -24,7 +21,6 @@ async function req(method, path, body) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
 
-  // 204 No Content no tiene body
   if (res.status === 204) return null
 
   const data = await res.json()
@@ -34,13 +30,11 @@ async function req(method, path, body) {
 
 // ─── Normalización backend → frontend ─────────────────────────────────────────
 
-/** ACTIVO → activo, INACTIVO → inactivo, FALLA → alerta */
 function normEstado(s) {
   const map = { ACTIVO: 'activo', INACTIVO: 'inactivo', FALLA: 'alerta', EN_USO: 'activo', DAÑADO: 'alerta' }
   return map[s] || 'inactivo'
 }
 
-/** "SOJA" → "Soja" */
 function capitalizarGrano(g) {
   if (!g) return ''
   return g.charAt(0) + g.slice(1).toLowerCase()
@@ -56,7 +50,7 @@ export function normalizeSensor(s) {
     campoId: typeof s.campo === 'object' ? s.campo?.id : s.campo,
     silobolsaId: activeLink?.silobolsa?.id ?? null,
     estado: normEstado(s.estado),
-    lecturas: [],  // se cargan aparte con getReadingsBySensor
+    lecturas: [],
   }
 }
 
@@ -81,7 +75,6 @@ export function normalizeField(f) {
     nombre: f.nombre,
     ubicacion: f.ubicacion,
     estado: f.estado,
-    // Cuando vienen populados, extraemos IDs; cuando son IDs directos, los usamos
     silobolsas: (f.silobolsas ?? []).map(s => (typeof s === 'object' ? s.id : s)),
     sensores:   (f.sensores ?? []).map(s => (typeof s === 'object' ? s.id : s)),
   }
@@ -95,6 +88,7 @@ export function normalizeReading(r) {
     humidity:    r.hum,
     co2:         r.co2,
     alerta:      r.alerta,
+    visto:       r.visto,
   }
 }
 
@@ -127,7 +121,7 @@ export const api = {
   updateField: (id, dto) => req('PATCH', `/fields/${id}`, dto),
   deleteField: (id) => req('DELETE', `/fields/${id}`),
 
-  // Sensors (nested bajo campo)
+  // Sensors
   getSensors:          (fieldId) => req('GET', `/fields/${fieldId}/sensors`),
   getAvailableSensors: (fieldId) => req('GET', `/fields/${fieldId}/sensors/available`),
   getSensor:           (fieldId, id) => req('GET', `/fields/${fieldId}/sensors/${id}`),
@@ -135,7 +129,7 @@ export const api = {
   updateSensor:        (fieldId, id, dto) => req('PATCH', `/fields/${fieldId}/sensors/${id}`, dto),
   deleteSensor:        (fieldId, id) => req('DELETE', `/fields/${fieldId}/sensors/${id}`),
 
-  // Silobolsas (nested bajo campo)
+  // Silobolsas
   getSilobolsas:   (fieldId) => req('GET', `/fields/${fieldId}/silobolsas`),
   getSilobolsa:    (fieldId, id) => req('GET', `/fields/${fieldId}/silobolsas/${id}`),
   createSilobolsa: (fieldId, dto) => req('POST', `/fields/${fieldId}/silobolsas`, dto),
@@ -147,7 +141,9 @@ export const api = {
     req('DELETE', `/fields/${fieldId}/silobolsas/${silobagId}/link`),
 
   // Readings
-  getAlerts:             () => req('GET', '/readings/alerts'),
-  getReadingsBySensor:   (sensorId, hours = 24) => req('GET', `/readings/sensor/${sensorId}?hours=${hours}`),
-  getReadingsBySilobag:  (silobagId, hours = 24) => req('GET', `/readings/silobag/${silobagId}?hours=${hours}`),
+  getAlerts:            () => req('GET', '/readings/alerts'),
+  markAlertSeen:        (id) => req('PATCH', `/readings/alerts/${id}/seen`),
+  markAllAlertsSeen:    () => req('PATCH', '/readings/alerts/seen-all'),
+  getReadingsBySensor:  (sensorId, hours = 24) => req('GET', `/readings/sensor/${sensorId}?hours=${hours}`),
+  getReadingsBySilobag: (silobagId, hours = 24) => req('GET', `/readings/silobag/${silobagId}?hours=${hours}`),
 }

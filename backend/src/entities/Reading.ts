@@ -21,6 +21,10 @@ export class Reading {
   @Property()
   timestamp: Date = new Date();
 
-  @Property({ default: false })
+  @Property({ default: false, type: 'boolean' })
   alerta: boolean = false;
+
+  /** true cuando el usuario descartó la alerta desde el frontend */
+  @Property({ default: false, type: 'boolean' })
+  visto: boolean = false;
 }
