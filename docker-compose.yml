@@ -42,8 +42,8 @@ services:
   # ── Backend ────────────────────────────────────────────────
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: guardian_backend
     restart: unless-stopped
     env_file: .env
@@ -61,13 +61,12 @@ services:
         condition: service_started
     networks:
       - guardian_net
-    command: pnpm dev
 
   # ── Frontend ───────────────────────────────────────────────
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
     container_name: guardian_frontend
     restart: unless-stopped
     environment:
