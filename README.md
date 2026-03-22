@@ -73,13 +73,6 @@ API_KEY_SECRET=otroSecreto16chars
 # Telegram (opcional, para recibir alertas)
 TELEGRAM_BOT_TOKEN=tu_token_del_bot
 TELEGRAM_CHAT_ID=tu_chat_id
-
-# Email (opcional, para recibir alertas)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=tu_cuenta@gmail.com
-SMTP_PASS=tu_contraseña_de_aplicacion
-SMTP_FROM="Guardián Silobolsa <tu_cuenta@gmail.com>"
 ```
 
 > Las variables de MQTT, umbrales y simulador ya tienen valores por defecto en `.env.example` y no necesitan modificarse para probarlo localmente.
